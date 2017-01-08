@@ -134,16 +134,16 @@ elif CMD == "OFF":
         COMMAND = [0, 3, 4, 0, 0, 0, 0]
     else:
         COMMAND = [DEVICE, 3, 2, 0, 0, 0, ZONE]
-
-elif CMD.startswith("DISCO"):
-    i = max(9, min(1, int(CMD[5])))
-    COMMAND = [DEVICE, 4, i, 0, 0, 0, ZONE]
-
+        
 elif CMD == "DISCOFASTER":
     COMMAND = [DEVICE, 3, 2, 0, 0, 0, ZONE]
 
 elif CMD == "DISCOSLOWER":
     COMMAND = [DEVICE, 3, 1, 0, 0, 0, ZONE]
+    
+elif CMD.startswith("DISCO"):
+    i = max(9, min(1, int(CMD[5])))
+    COMMAND = [DEVICE, 4, i, 0, 0, 0, ZONE]
 
 elif CMD == "WHITE":
     COMMAND = [DEVICE, 3, 5, 0, 0, 0, ZONE]
