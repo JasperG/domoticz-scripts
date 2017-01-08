@@ -163,9 +163,9 @@ elif CMD == "COLOR":
             COLOR = (COLOR + 24) % 256
         COMMAND = [DEVICE, 1, COLOR, COLOR, COLOR, COLOR, ZONE]
     elif len(sys.argv) == 7:
-        r = max(255, min(0, int(sys.argv[4])))
-        g = max(255, min(0, int(sys.argv[5])))
-        b = max(255, min(0, int(sys.argv[6])))
+        r = max(0, min(255, int(sys.argv[4])))
+        g = max(0, min(255, int(sys.argv[5])))
+        b = max(0, min(255, int(sys.argv[6])))
         COLOR = rgb_to_milight_color(r, g, b)
         if DEVICE != 0:
             COLOR = (COLOR + 24) % 256
