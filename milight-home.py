@@ -18,7 +18,7 @@
 #  WHITE
 #  BRIGHT (0-100)
 #  SPECTRUM                     Animates lamps through full color spectrum
-#  COLOR (hex color)            ie. #ff0000 for red, #0000ff for blue
+#  COLOR "(hex color)"          ie. "#ff0000" for red, "#0000ff" for blue
 #  COLOR (red) (green) (blue)   ie. 255 0 0 for red, 0 0 255 for blue
 
 __author__ = 'Jasper Goes (Pander)'
@@ -172,7 +172,7 @@ elif CMD == "COLOR":
         COMMAND = [DEVICE, 1, COLOR, COLOR, COLOR, COLOR, ZONE]
     else:
         sock.close()
-        print "No (correct) value for color given. May be hex (ie. #ff0000 or #00ff00 etc etc), or RGB values (ie. 255 0 0 or 0 255 0). Add a valid value for color.\n"
+        print "No (correct) value for color given. May be hex (ie. \"#ff0000\" or \"#00ff00\" etc etc), or RGB values (ie. 255 0 0 or 0 255 0). Add a valid value for color.\n"
         usage()
 
 elif CMD == "SPECTRUM":
