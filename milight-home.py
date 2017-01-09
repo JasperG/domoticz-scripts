@@ -43,9 +43,9 @@ LCL_PORT = 55054
 def usage():
     print "Please specify a valid argument.\n\nUsage:\n milight-home.py [DEVICE (0,7,8)] [ZONE (0,1,2,3,4)] " \
           "[COMMAND ...]\n\nCommands are:\n ON\n OFF\n DISCO[1-9]\n DISCOFASTER\n DISCOSLOWER\n WHITE\n BRIGHT " \
-          "(0-100)\n SPECTRUM\t\t\t\t\t\tAnimates lamps through full color spectrum\n COLOR (hex color)\t" \
-          "\t\tie. #ff0000 for red, #0000ff for blue\n COLOR (red) (green) (blue)\tie. 255 0 0 for red, 0 0 255 for " \
-          "blue"
+          "(0-100)\n SPECTRUM\t\t\t\t\t\tAnimates lamps through full color spectrum\n COLOR \"(hex color)\"\t" \
+          "\t\tie. \"#ff0000\" for red, \"#0000ff\" for blue\n COLOR (red) (green) (blue)\tie. 255 0 0 for red, 0 0 " \
+          "255 for blue"
     raise SystemExit(1)
 
 def build(payload):
@@ -110,17 +110,24 @@ if BOX_DISCOVERY:
         raise SystemExit(1)
 
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-sock.sendto(bytearray(
-    [32, 0, 0, 0, 22, 2, 98, 58, 213, 237, 163, 1, 174, 8, 45, 70, 97, 65, 167, 246, 220, 175, 211, 230, 0, 0, 30]),
-    (BOX_ADDR, BOX_PORT))
-data = tuple(sock.recvfrom(64))[0]
+success = False
+for i in range(0, 4):
+    sock.sendto(bytearray(
+        [32, 0, 0, 0, 22, 2, 98, 58, 213, 237, 163, 1, 174, 8, 45, 70, 97, 65, 167, 246, 220, 175, 211, 230, 0, 0, 30]),
+        (BOX_ADDR, BOX_PORT))
+    try:
+        data = tuple(sock.recvfrom(64))[0]
+        if str(data.encode('hex')).startswith('2800000011'):
+            SESSID = [data[19], data[20]]
+            success = True
+            break
+    except socket.timeout:
+        continue
 
-if not str(data.encode('hex')).startswith('2800000011'):
+if not success:
     sock.close()
-    print "[ERROR] Did not receive the expected response from iBox\n", str(data.encode('hex')).upper()
+    print "[ERROR] Did not receive the expected response from iBox"
     raise SystemExit(2)
-
-SESSID = [data[19], data[20]]
 
 # Prepare the message to send
 if CMD == "ON":
@@ -134,25 +141,29 @@ elif CMD == "OFF":
         COMMAND = [0, 3, 4, 0, 0, 0, 0]
     else:
         COMMAND = [DEVICE, 3, 2, 0, 0, 0, ZONE]
-        
+
 elif CMD == "DISCOFASTER":
-    if DEVICE == 7:
+    if DEVICE == 0:
+        COMMAND = [DEVICE, 3, 2, 0, 0, 0, 0]
+    elif DEVICE == 7:
         COMMAND = [DEVICE, 3, 3, 0, 0, 0, ZONE]
-    else:
+    elif DEVICE == 8:
         COMMAND = [DEVICE, 4, 3, 0, 0, 0, ZONE]
 
 elif CMD == "DISCOSLOWER":
-    if DEVICE == 7:
+    if DEVICE == 0:
+        COMMAND = [DEVICE, 3, 1, 0, 0, 0, 0]
+    elif DEVICE == 7:
         COMMAND = [DEVICE, 3, 4, 0, 0, 0, ZONE]
-    else:
+    elif DEVICE == 8:
         COMMAND = [DEVICE, 4, 4, 0, 0, 0, ZONE]
 
 elif CMD.startswith("DISCO"):
-    i = max(9, min(1, int(CMD[5])))
-    if DEVICE == 8:
-        COMMAND = [DEVICE, 6, i, 0, 0, 0, ZONE]
-    else:
+    i = max(1, min(9, int(CMD[5])))
+    if DEVICE == 7 or DEVICE == 0:
         COMMAND = [DEVICE, 4, i, 0, 0, 0, ZONE]
+    elif DEVICE == 8:
+        COMMAND = [DEVICE, 6, i, 0, 0, 0, ZONE]
 
 elif CMD == "WHITE":
     COMMAND = [DEVICE, 3, 5, 0, 0, 0, ZONE]
