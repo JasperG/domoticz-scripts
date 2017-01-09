@@ -25,7 +25,7 @@ __author__ = 'Jasper Goes (Pander)'
 __email__ = "jasper@jaspergoes.nl"
 
 # Optional configuration
-BOX_REPT = 2  # Amount of times to repeat commands
+BOX_REPT = 1  # Amount of times to repeat commands
 BOX_DISCOVERY = True  # Auto-discover BOX_ADDR
 BOX_ADDR = ""  # IP Address of iBox. Should not be needed when BOX_DISCOVERY = True
 BOX_PORT = 5987  # iBox port. Should not need any modification.
@@ -196,8 +196,8 @@ elif CMD == "COLOR":
         usage()
 
 elif CMD == "SPECTRUM":
-    print "[DEBUG] Communicating with iBox, identified by ID", SESSID[0].encode('hex').upper(), SESSID[1].encode(
-        'hex').upper()
+    print "[DEBUG] Communicating with iBox at " + BOX_ADDR + ", identified by ID", SESSID[0].encode('hex').upper(), \
+        SESSID[1].encode('hex').upper()
     for i in range(0, 256):
         if DEVICE != 0:
             COLOR = (i + 24) % 256
@@ -226,8 +226,8 @@ elif CMD == "SPECTRUM":
 else:
     usage()
 
-print "[DEBUG] Communicating with iBox, identified by ID", SESSID[0].encode('hex').upper(), SESSID[1].encode(
-    'hex').upper()
+print "[DEBUG] Communicating with iBox at " + BOX_ADDR + ", identified by ID", SESSID[0].encode('hex').upper(), \
+    SESSID[1].encode('hex').upper()
 for i in range(0, max(1, BOX_REPT)):
     payload = build(COMMAND)
     sock.sendto(payload, (BOX_ADDR, BOX_PORT))
