@@ -18,7 +18,7 @@
 #  WHITE
 #  BRIGHT (0-100)
 #  SPECTRUM                     Animates lamps through full color spectrum
-#  COLOR "(hex color)"          ie. "#ff0000" for red, "#0000ff" for blue
+#  COLOR "(hex color)"          ie. "#ff0000" for red, "#0000ff" for blue ('#' char not needed)
 #  COLOR (red) (green) (blue)   ie. 255 0 0 for red, 0 0 255 for blue
 
 __author__ = 'Jasper Goes (Pander)'
@@ -33,12 +33,14 @@ BOX_PORT = 5987  # iBox port. Should not need any modification.
 # For basic usage, no further modification is nescessary beyond this line
 import re
 import sys
+import array
 import socket
 from time import sleep
 from colorsys import rgb_to_hsv
 
 NOONCE = 1
 LCL_PORT = 55054
+SESSPW = bytearray([255, 255])
 
 def usage():
     print "Please specify a valid argument.\n\nUsage:\n milight-home.py [DEVICE (0,7,8)] [ZONE (0,1,2,3,4)] " \
@@ -49,12 +51,14 @@ def usage():
     raise SystemExit(1)
 
 def build(payload):
-    global NOONCE, SESSID
+    global NOONCE, SESSID, SESSPW
     NOONCE = (NOONCE + 1) % 256
     # Base frame
-    frame = [128, 0, 0, 0, 17, 0, NOONCE, 0, 49, 0, 0, 0, 0]
+    frame = [128, 0, 0, 0, 17, 0, NOONCE, 0, 49, 0, 0]
     # Session
     frame[5:5] = SESSID
+    # Pasword
+    frame[11:11] = SESSPW
     # Payload
     frame[13:13] = payload
     # Checksum
@@ -129,6 +133,28 @@ if not success:
     print "[ERROR] Did not receive the expected response from iBox"
     raise SystemExit(2)
 
+success = False
+for i in range(0, 4):
+    if not success:
+        sock.sendto(build([0, 1, 0, 0, 0, 0, 0]), (BOX_ADDR, BOX_PORT))
+
+        for x in range(0, 2):
+            try:
+                data = tuple(sock.recvfrom(64))[0]
+                if str(data.encode('hex')).startswith('8000000015'):
+                    data = array.array('B', data)
+                    SESSPW = [data[16], data[17]]
+                    print "[DEBUG] Found iBox password to be", str(data[16]).zfill(2), str(data[17]).zfill(2)
+                    success = True
+                    break
+            except socket.timeout:
+                continue
+
+if not success:
+    sock.close()
+    print "[ERROR] Could not discover password bytes from iBox"
+    raise SystemExit(2)
+
 # Prepare the message to send
 if CMD == "ON":
     if DEVICE == 0:
@@ -181,6 +207,8 @@ elif CMD == "COLOR":
         COLOR = hex_to_milight_color(sys.argv[4])
         if DEVICE != 0:
             COLOR = (COLOR + 24) % 256
+        else:
+            COLOR = (COLOR - 3) % 256
         COMMAND = [DEVICE, 1, COLOR, COLOR, COLOR, COLOR, ZONE]
     elif len(sys.argv) == 7:
         r = max(0, min(255, int(sys.argv[4])))
@@ -189,6 +217,8 @@ elif CMD == "COLOR":
         COLOR = rgb_to_milight_color(r, g, b)
         if DEVICE != 0:
             COLOR = (COLOR + 24) % 256
+        else:
+            COLOR = (COLOR - 3) % 256
         COMMAND = [DEVICE, 1, COLOR, COLOR, COLOR, COLOR, ZONE]
     else:
         sock.close()
@@ -202,7 +232,7 @@ elif CMD == "SPECTRUM":
         if DEVICE != 0:
             COLOR = (i + 24) % 256
         else:
-            COLOR = i
+            COLOR = (i - 3) % 256
         COMMAND = [DEVICE, 1, COLOR, COLOR, COLOR, COLOR, ZONE]
         for z in range(0, max(1, BOX_REPT)):
             payload = build(COMMAND)
