@@ -27,7 +27,7 @@ __email__ = "jasper@jaspergoes.nl"
 # Optional configuration
 BOX_REPT = 1  # Amount of times to repeat commands
 BOX_DISCOVERY = True  # Auto-discover BOX_ADDR
-BOX_ADDR = ""  # IP Address of iBox. Should not be needed when BOX_DISCOVERY = True
+BOX_ADDR = ""  # IP Address of iBox. To use this, set: BOX_DISCOVERY = False
 BOX_PORT = 5987  # iBox port. Should not need any modification.
 
 # For basic usage, no further modification is nescessary beyond this line
@@ -57,7 +57,7 @@ def build(payload):
     frame = [128, 0, 0, 0, 17, 0, NOONCE, 0, 49, 0, 0]
     # Session
     frame[5:5] = SESSID
-    # Pasword
+    # Password
     frame[11:11] = SESSPW
     # Payload
     frame[13:13] = payload
@@ -80,12 +80,12 @@ if len(sys.argv) < 4:
 
 DEVICE = int(sys.argv[1])
 if DEVICE < 0 or DEVICE > 8:
-    print "[ERROR] Invalid device. Device can be any of 0, 7 or 8. Given: ", DEVICE, "\n"
+    print "[ERROR] Invalid device. Device can be any of 0, 7 or 8. Given:", DEVICE, "\n"
     usage()
 
 ZONE = int(sys.argv[2])
 if ZONE < 0 or ZONE > 4:
-    print "[ERROR] Invalid zone. Zones can be any of 0, 1, 2, 3 or 4. Given: ", ZONE, "\n"
+    print "[ERROR] Invalid zone. Zone can be any of 0, 1, 2, 3 or 4. Given:", ZONE, "\n"
     usage()
 
 CMD = sys.argv[3].upper()
