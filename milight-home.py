@@ -160,13 +160,19 @@ if CMD == "ON":
     if DEVICE == 0:
         COMMAND = [0, 3, 3, 0, 0, 0, 0]
     else:
-        COMMAND = [DEVICE, 3, 1, 0, 0, 0, ZONE]
+        if DEVICE == 8:
+            COMMAND = [DEVICE, 4, 1, 0, 0, 0, ZONE]
+        else:
+            COMMAND = [DEVICE, 3, 1, 0, 0, 0, ZONE]
 
 elif CMD == "OFF":
     if DEVICE == 0:
         COMMAND = [0, 3, 4, 0, 0, 0, 0]
     else:
-        COMMAND = [DEVICE, 3, 2, 0, 0, 0, ZONE]
+        if DEVICE == 8:
+            COMMAND = [DEVICE, 4, 2, 0, 0, 0, ZONE]
+        else:
+            COMMAND = [DEVICE, 3, 2, 0, 0, 0, ZONE]
 
 elif CMD == "DISCOFASTER":
     if DEVICE == 0:
@@ -196,7 +202,10 @@ elif CMD == "WHITE":
 
 elif CMD == "BRIGHT":
     if len(sys.argv) == 5:
-        COMMAND = [DEVICE, 2, max(0, min(100, int(sys.argv[4]))), 0, 0, 0, ZONE]
+        if DEVICE == 8:
+            COMMAND = [DEVICE, 3, max(0, min(100, int(sys.argv[4]))), 0, 0, 0, ZONE]
+        else:
+            COMMAND = [DEVICE, 2, max(0, min(100, int(sys.argv[4]))), 0, 0, 0, ZONE]
     else:
         sock.close()
         print "No value for brightness given. Add a 0 - 100 value for brightness.\n"
@@ -205,20 +214,20 @@ elif CMD == "BRIGHT":
 elif CMD == "COLOR":
     if len(sys.argv) == 5 and re.search(r'^#(?:[0-9a-fA-F]{3}){1,2}$', sys.argv[4]):
         COLOR = hex_to_milight_color(sys.argv[4])
-        if DEVICE != 0:
-            COLOR = (COLOR + 24) % 256
-        else:
-            COLOR = (COLOR - 3) % 256
+        if DEVICE == 7:
+            COLOR = (COLOR + 26) % 256
+        elif DEVICE == 8:
+            COLOR = (COLOR + 10) % 256
         COMMAND = [DEVICE, 1, COLOR, COLOR, COLOR, COLOR, ZONE]
     elif len(sys.argv) == 7:
         r = max(0, min(255, int(sys.argv[4])))
         g = max(0, min(255, int(sys.argv[5])))
         b = max(0, min(255, int(sys.argv[6])))
         COLOR = rgb_to_milight_color(r, g, b)
-        if DEVICE != 0:
-            COLOR = (COLOR + 24) % 256
-        else:
-            COLOR = (COLOR - 3) % 256
+        if DEVICE == 7:
+            COLOR = (COLOR + 26) % 256
+        elif DEVICE == 8:
+            COLOR = (COLOR + 10) % 256
         COMMAND = [DEVICE, 1, COLOR, COLOR, COLOR, COLOR, ZONE]
     else:
         sock.close()
@@ -229,10 +238,10 @@ elif CMD == "SPECTRUM":
     print "[DEBUG] Communicating with iBox at " + BOX_ADDR + ", identified by ID", SESSID[0].encode('hex').upper(), \
         SESSID[1].encode('hex').upper()
     for i in range(0, 256):
-        if DEVICE != 0:
-            COLOR = (i + 24) % 256
-        else:
-            COLOR = (i - 3) % 256
+        if DEVICE == 7:
+            COLOR = (i + 26) % 256
+        elif DEVICE == 8:
+            COLOR = (i + 10) % 256
         COMMAND = [DEVICE, 1, COLOR, COLOR, COLOR, COLOR, ZONE]
         for z in range(0, max(1, BOX_REPT)):
             payload = build(COMMAND)
